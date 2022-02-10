@@ -2,9 +2,7 @@
 
 use Illuminate\Database\Capsule\Manager as Capsule;
 use Psr\Http\Message\ServerRequestInterface as Request;
-use src\Models\JP\JPCoreScript;
-use src\Models\JP\JPSetting;
-use src\Models\JP\JPCustomLink;
+
 use src\classes\JPDatabase;
 
 // DIC configuration
@@ -21,83 +19,6 @@ $container['eView'] = function ($c) {
 $container['view'] = function ($c) {
     
     $settings = $c->get('settings')['renderer'];
-    // Setting default template layout by setting gloabl variables
-    $phpView = new Slim\Views\PhpRenderer($settings['template_path']);
-    // Create base paths array
-
-    $customCssFiles=[];
-    foreach(glob($settings['base_path'] . '\assets\css\custom-css\public\*.css') as $file) {
-        $customCssFiles[] = $settings['base_url'].'assets/css/custom-css/public/'.basename($file);
-    }
-    
-    $basepaths = [
-        'customCssFiles' => $customCssFiles,
-        'css' => $settings['base_url'] . 'assets/css/',
-        'content_images' => $settings['base_url'] . 'assets/content-images/',
-        'js' => $settings['base_url'] . 'assets/js/',
-        'img' => $settings['base_url'] . 'assets/img/',
-        'plugin' => $settings['base_url'] . 'assets/plugins/',
-        'url' => $settings['base_url'],
-        'title' => $c->get('settings')['title'],
-        'public' => $settings['base_url'] . 'assets/public/',
-        'JPCoreScripts' => JPCoreScript::all(),
-    ];
-    
-    //if(!isset($_SESSION['JPSetting'])) {
-        $_SESSION['JPSetting'] = JPSetting::getAll();
-    //}
-    
-    $templateVariables = [
-        'basepaths' => $basepaths,
-        'header' => $phpView->fetch('public/layouts/header.phtml', $basepaths),
-        'footer' => $phpView->fetch('public/layouts/footer.phtml', $basepaths),
-        'content' => '',
-        'jscript' => '',
-        'currPath' => $c->get('request')->geturi()->getPath(),
-        'nav' => $phpView->fetch('public/layouts/nav.phtml', $basepaths),
-        'JPSetting' => $_SESSION['JPSetting'],
-            
-    ];
-    // setter
-    $phpView->setAttributes($templateVariables);
-    return $phpView;
-};
-
-$container['adminView'] = function ($c) {
-    $settings = $c->get('settings')['renderer'];
-    // Setting default template layout by setting gloabl variables
-    $phpView = new Slim\Views\PhpRenderer($settings['template_path']);
-    // Create base paths array
-    $customCssFiles=[];
-    foreach(glob($settings['base_path'] . '\assets\css\custom-css\admin\*.css') as $file) {
-        $customCssFiles[] = $settings['base_url'].'assets/css/custom-css/admin/'.basename($file);
-    }
-    $basepaths = [
-        'customCssFiles' => $customCssFiles,
-        'css' => $settings['base_url'] . 'assets/css/',
-        'content_images' => $settings['base_url'] . 'assets/content-images/',
-        'js' => $settings['base_url'] . 'assets/js/',
-        'img' => $settings['base_url'] . 'assets/img/',
-        'plugin' => $settings['base_url'] . 'assets/plugins/',
-        'url' => $settings['base_url'],
-        'title' => $c->get('settings')['title'],
-        'fmpath' => $settings['base_url'].'modules/tinyfilemanager/tinyfilemanager.php', 
-        
-    ];
-    
-    $templateVariables = [
-        'basepaths' => $basepaths,
-        'header' => $phpView->fetch('admin/layouts/header.phtml', $basepaths),
-        'footer' => $phpView->fetch('admin/layouts/footer.phtml', $basepaths),
-        'currPath' => $c->get('request')->geturi()->getPath(),
-        'content' => '',
-        'jscript' => '',
-        'nav' => $phpView->fetch('admin/layouts/nav.phtml', $basepaths),
-    ];
-    // setter
-    $phpView->setAttributes($templateVariables);
-    return $phpView;
-};
 
 // Register flash message
 $container['flash'] = function () {
@@ -165,10 +86,6 @@ if($container->get('settings')['sameDBMSForJPArchives']) {
 $capsule->addConnection($container->get('settings')['db'], "default");
 $capsule->setAsGlobal();
 $capsule->bootEloquent();
-
-//$checkProxyHeaders = true;
-//$trustedProxies = ['10.0.0.1', '10.0.0.2'];
-//$app->add(new RKA\Middleware\IpAddress($checkProxyHeaders, $trustedProxies));
 
 $container['csrf'] = function ($c) {
     return new \Slim\Csrf\Guard;
